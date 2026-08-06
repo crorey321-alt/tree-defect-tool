@@ -1023,6 +1023,21 @@ async function openDrawFile(f){
 /* ===================== 계정 / Supabase ===================== */
 var sb=null, SYNC_ON=false, syncT=null, syncing=false;
 function cfgOk(){return !!(window.TDS_CONFIG&&TDS_CONFIG.url&&TDS_CONFIG.key);}
+/* 설정이 비어 보이면 캐시를 건너뛰고 config.js를 다시 받아 본다.
+   서비스워커가 옛 config.js를 들고 있으면 설정을 채워 배포해도 "비어 있습니다"가 뜬다.
+   그 상태에서 사용자가 할 수 있는 일이 없으므로 앱이 스스로 한 번 회복한다.
+   (파일을 실행하지 않고 값만 뽑아낸다 — 남의 스크립트를 돌리지 않기 위해서다.) */
+async function reloadConfigFromNetwork(){
+  if(location.protocol==='file:'||!navigator.onLine)return false;
+  try{
+    var r=await fetch('config.js?t='+Date.now(),{cache:'no-store'});
+    if(!r.ok)return false;
+    var t=await r.text();
+    var u=t.match(/url\s*:\s*['"]([^'"]+)['"]/), k=t.match(/key\s*:\s*['"]([^'"]+)['"]/);
+    if(!u||!k||!u[1]||!k[1])return false;
+    window.TDS_CONFIG={url:u[1],key:k[1]};
+    return true;
+  }catch(e){return false;}}
 function sbInit(){
   if(!cfgOk()||!window.supabase)return false;
   try{sb=window.supabase.createClient(TDS_CONFIG.url,TDS_CONFIG.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});return true;}
@@ -1255,6 +1270,7 @@ window.addEventListener('load',async function(){
     enterApp(null);});
   setAuthMode('login');
 
+  if(!cfgOk())await reloadConfigFromNetwork();
   if(!cfgOk()){
     $('authSub').innerHTML='아직 서버 설정(config.js)이 비어 있습니다.<br>아래 "이 기기에서만 사용하기"로 바로 쓸 수 있고, 설정을 채우면 로그인·동기화가 켜집니다.';
     showAuth();return;}
