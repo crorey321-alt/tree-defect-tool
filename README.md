@@ -2,6 +2,10 @@
 
 v19 HTML 파일을 **폰에 설치되는 앱(PWA)** 으로 바꾸고, **계정별 로그인 + 클라우드 동기화**를 붙인 버전입니다.
 
+> **앱 주소**: <https://crorey321-alt.github.io/tree-defect-tool/>
+> 지금 이 주소로 바로 쓸 수 있습니다(이 기기 전용 모드).
+> 여러 폰에서 자료를 공유하려면 아래 **준비 A(Supabase)** 만 하시면 됩니다 — **남은 작업은 이것 하나뿐입니다.**
+
 ---
 
 ## 1. 왜 v19에서 폰이 먹통이 됐는가 (그리고 무엇을 고쳤는가)
@@ -86,29 +90,37 @@ v19에서는 앱 안에서 찍은 사진이 **앱 안에만** 들어가고, 폰 
 > 사내에서 바로 쓰려면 **Authentication → Sign In / Providers → Email → Confirm email** 을 꺼 두세요.
 > 켜 둔 채로 쓰면, 가입 후 메일함의 링크를 눌러야 로그인이 됩니다.
 
-### 준비 B — 인터넷 주소에 올리기 (필수)
+### 준비 B — 인터넷 주소에 올리기 ✅ 완료
 
 PWA는 **https 주소**에서만 설치·오프라인 동작이 됩니다. 파일을 그냥 열면(`file://`) 안 됩니다.
-가장 간단한 무료 방법은 **GitHub Pages** 입니다.
+**이미 GitHub Pages에 올려 두었습니다.**
 
-1. GitHub에 새 저장소(예: `tree-defect-tool`)를 **Public** 으로 만듭니다.
-2. 이 폴더의 파일 전체를 올립니다.
+| | |
+|---|---|
+| **앱 주소** | <https://crorey321-alt.github.io/tree-defect-tool/> |
+| 저장소 | <https://github.com/crorey321-alt/tree-defect-tool> (Public) |
+| 배포 방식 | `main` 브랜치의 root 폴더를 그대로 서빙 |
 
-   ```bash
-   cd "C:\Users\crore\Workspace\docs\2026-08-04-교목하자조사도구-v20"
-   git init
-   git add -A
-   git commit -m "교목 하자조사 도구 v20"
-   git branch -M main
-   git remote add origin https://github.com/<내계정>/tree-defect-tool.git
-   git push -u origin main
-   ```
-3. 저장소 **Settings → Pages** → Source: `Deploy from a branch` → Branch: `main` / `/ (root)` → Save
-4. 1~2분 뒤 `https://<내계정>.github.io/tree-defect-tool/` 로 열립니다.
+이 폴더(`Workspace\docs\2026-08-04-교목하자조사도구-v20`)가 곧 그 저장소입니다.
 
-> 저장소를 Public으로 두면 `config.js`의 anon 키가 공개됩니다. **이건 정상입니다** — anon 키는 원래 공개용이고, 실제 차단은 서버의 RLS 규칙이 합니다. 다만 저장소를 Private으로 두고 Pages를 쓰려면 GitHub 유료 플랜이 필요합니다.
+**앱을 고친 뒤 다시 올리는 법** — `sw.js`의 `CACHE` 숫자를 올린 다음:
+
+```bash
+cd "C:\Users\crore\Workspace\docs\2026-08-04-교목하자조사도구-v20"
+git add -A
+git commit -m "수정 내용"
+git push
+```
+
+1~2분 뒤 반영됩니다. `CACHE` 숫자를 안 올리면 폰이 옛 버전을 계속 씁니다.
+
+> 저장소가 Public이라 `config.js`의 anon 키가 공개됩니다. **이건 정상입니다** — anon 키는 원래 공개용이고,
+> 실제 차단은 서버의 RLS 규칙이 합니다. 도면·사진·조사 자료는 저장소에 들어가지 않습니다.
+> Private으로 두고 Pages를 쓰려면 GitHub 유료 플랜이 필요합니다.
 
 ### 준비 C — 폰에 설치
+
+폰 브라우저에서 <https://crorey321-alt.github.io/tree-defect-tool/> 를 엽니다.
 
 **아이폰 (Safari로 열어야 합니다. 크롬 아님)**
 주소 열기 → 아래 **공유 버튼(↑)** → **홈 화면에 추가** → 추가
