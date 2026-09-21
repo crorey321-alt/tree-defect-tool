@@ -1,12 +1,11 @@
 /* 교목 하자조사 도구 v20 — 서비스워커
    앱 껍데기와 라이브러리를 기기에 캐시해 두어, 현장에서 신호가 없어도 즉시 실행된다.
    앱을 고칠 때마다 아래 CACHE 이름의 숫자를 하나 올려 주세요. (예: v20-3) */
-var CACHE = 'tds-v20-16';
+var CACHE = 'tds-v20-17';
 
 var SHELL = [
   './',
   './index.html',
-  './app.bundle.js',
   './config.js',
   './manifest.webmanifest',
   './icon-192.png',

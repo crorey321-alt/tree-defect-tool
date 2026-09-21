@@ -88,6 +88,8 @@ tr.clickable:hover td{background:#f0f5ff}
 #auth input{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:8px;font-size:16px}
 #auth button{width:100%;padding:12px;margin-top:14px;font-size:15px;font-weight:700}
 #auth .lnk{margin-top:12px;text-align:center;font-size:13px;color:#2563eb;cursor:pointer;text-decoration:underline}
+#auth .lnk.subtle{margin-top:8px;font-size:12px;color:#64748b}
+#auth .hide{display:none!important}
 #authMsg{margin-top:12px;font-size:12.5px;line-height:1.5;padding:9px 11px;border-radius:8px;display:none}
 #authMsg.err{background:#fef2f2;color:#b91c1c}#authMsg.ok{background:#ecfdf5;color:#047857}#authMsg.info{background:#eff6ff;color:#1d4ed8}
 #authLocal{margin-top:16px;padding-top:14px;border-top:1px dashed #e2e8f0;font-size:12px;color:#64748b;text-align:center;cursor:pointer}
@@ -126,10 +128,11 @@ tr.clickable:hover td{background:#f0f5ff}
 <div id="auth"><div class="card">
   <h1>수목하자조사(K)</h1>
   <div class="sub" id="authSub">회사 이메일과 비밀번호로 로그인하세요.<br>내 계정의 조사 자료만 보이고, 다른 기기에서도 이어서 볼 수 있습니다.</div>
-  <label>이메일</label><input type="email" id="auEmail" autocomplete="username" inputmode="email" placeholder="name@company.com">
-  <label>비밀번호</label><input type="password" id="auPw" autocomplete="current-password" placeholder="6자 이상">
+  <label id="auEmailLabel">이메일</label><input type="email" id="auEmail" autocomplete="username" inputmode="email" placeholder="name@company.com">
+  <label id="auPwLabel">비밀번호</label><input type="password" id="auPw" autocomplete="current-password" placeholder="6자 이상">
   <button class="pri" id="auGo">로그인</button>
   <div class="lnk" id="auToggle">계정이 없으신가요? 회원가입</div>
+  <div class="lnk subtle" id="auReset">비밀번호를 잊으셨나요?</div>
   <div id="authMsg"></div>
   <div id="authLocal">서버 없이 이 기기에서만 사용하기</div>
 </div></div>
