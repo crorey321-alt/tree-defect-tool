@@ -1,6 +1,6 @@
 {
-  "name": "수목하자조사(K)",
-  "short_name": "수목하자조사(K)",
+  "name": "Tree Defect Inspection (L.A.Kang)",
+  "short_name": "TDI(K)",
   "description": "수목 하자조사 도면 마킹·수량표·사진대지 작성 도구",
   "start_url": "./index.html",
   "scope": "./",

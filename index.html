@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>수목하자조사(K)</title>
+<title>Tree Defect Inspection (L.A.Kang)</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0f172a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="수목하자조사(K)">
+<meta name="apple-mobile-web-app-title" content="TDI(K)">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" href="icon-192.png">
 <script src="lib/pdf.min.js"></script>
@@ -71,7 +71,7 @@ table{border-collapse:collapse;width:100%;margin-top:6px}
 th,td{border:1px solid #ddd;padding:5px 8px;text-align:left;font-size:13px}
 th{background:#f4f6f8}
 td.num,th.num{text-align:right}
-.sec{padding:10px 12px}
+.sec{position:relative;z-index:12;padding:10px 12px;background:#fff}
 .secHead{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .secHead b{font-size:15px}.secHead .grow{flex:1}
 .secToggle{min-height:32px;padding:4px 9px;background:#f8fafc}
@@ -137,7 +137,7 @@ tr.clickable:hover td{background:#f0f5ff}
 <body>
 
 <div id="auth"><div class="card">
-  <h1>수목하자조사(K)</h1>
+  <h1>Tree Defect Inspection (L.A.Kang)</h1>
   <div class="sub" id="authSub">회사 이메일과 비밀번호로 로그인하세요.<br>내 계정의 조사 자료만 보이고, 다른 기기에서도 이어서 볼 수 있습니다.</div>
   <label id="auEmailLabel">이메일</label><input type="email" id="auEmail" autocomplete="username" inputmode="email" placeholder="name@company.com">
   <label id="auPwLabel">비밀번호</label><input type="password" id="auPw" autocomplete="current-password" placeholder="6자 이상">
@@ -151,7 +151,7 @@ tr.clickable:hover td{background:#f0f5ff}
 <div id="splash" aria-hidden="true">
   <div class="splashCard">
     <img class="splashIcon" src="icon-512.png" alt="">
-    <h1>수목하자조사(K)</h1>
+    <h1>Tree Defect Inspection (L.A.Kang)</h1>
     <div class="splashMaker">Made by LAKang</div>
     <div class="splashSub">Landscape Architecture Kang</div>
     <div class="splashList">
@@ -167,7 +167,7 @@ tr.clickable:hover td{background:#f0f5ff}
 <div id="toolbar">
 <div id="toolbarHead">
   <button id="toolbarFold" type="button">접기</button>
-  <span id="toolbarTitle">도면 작업 화면</span>
+  <span id="toolbarTitle">Tree Defect Inspection (L.A.Kang)</span>
   <span class="grow"></span>
   <button id="tablesFoldAll" type="button">표 접기</button>
 </div>
@@ -302,7 +302,7 @@ tr.clickable:hover td{background:#f0f5ff}
 </div></div>
 
 <div class="modal" id="mInstall"><div class="box sm">
-  <b>수목하자조사(K) 설치 안내</b>
+  <b>Tree Defect Inspection (L.A.Kang) 설치 안내</b>
   <div style="font-size:13px;color:#475569;line-height:1.65;margin-top:10px">
     <b>iPhone</b><br>
     Safari에서 이 사이트 열기 → 공유 버튼 → 홈 화면에 추가<br><br>
@@ -320,6 +320,6 @@ tr.clickable:hover td{background:#f0f5ff}
 <input type="file" id="fileRestore" accept="application/json,.json" style="display:none">
 <input type="file" id="fileOcr" accept="image/*" style="display:none">
 
-<script src="app.bundle.js?v=20-19"></script>
+<script src="app.bundle.js?v=20-20"></script>
 </body>
 </html>
