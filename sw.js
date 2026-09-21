@@ -1,11 +1,12 @@
 /* 교목 하자조사 도구 v20 — 서비스워커
    앱 껍데기와 라이브러리를 기기에 캐시해 두어, 현장에서 신호가 없어도 즉시 실행된다.
    앱을 고칠 때마다 아래 CACHE 이름의 숫자를 하나 올려 주세요. (예: v20-3) */
-var CACHE = 'tds-v20-17';
+var CACHE = 'tds-v20-18';
 
 var SHELL = [
   './',
   './index.html',
+  './app.bundle.js',
   './config.js',
   './manifest.webmanifest',
   './icon-192.png',
@@ -60,20 +61,20 @@ self.addEventListener('fetch', function (e) {
     return;
   }
 
-  /* config.js: 서버 주소·키가 들어 있어 항상 최신이어야 한다.
+  /* app.bundle.js/config.js: 앱 본문과 서버 설정은 배포 직후 최신이어야 한다.
      캐시 우선으로 두면 설정을 바꿔 배포해도 폰이 옛 설정을 계속 써서
      "서버 설정이 비어 있습니다"가 뜬다. 그래서 문서와 같이 네트워크 우선.
      (신호가 없을 때만 캐시본을 쓴다 — 오프라인 동작은 그대로 유지된다.) */
-  if (/\/config\.js(\?|$)/.test(url.pathname + url.search)) {
+  if (/\/(app\.bundle|config)\.js(\?|$)/.test(url.pathname + url.search)) {
     e.respondWith(
       fetch(new Request(req, { cache: 'reload' })).then(function (res) {
         if (res && res.status === 200) {
           var copy = res.clone();
-          caches.open(CACHE).then(function (c) { c.put('./config.js', copy); });
+          caches.open(CACHE).then(function (c) { c.put(url.pathname.endsWith('/app.bundle.js') ? './app.bundle.js' : './config.js', copy); });
         }
         return res;
       }).catch(function () {
-        return caches.match('./config.js');
+        return caches.match(url.pathname.endsWith('/app.bundle.js') ? './app.bundle.js' : './config.js');
       })
     );
     return;
