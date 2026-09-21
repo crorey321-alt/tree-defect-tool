@@ -19,7 +19,12 @@
 *{box-sizing:border-box;margin:0}
 body{font-family:Pretendard,'Malgun Gothic',sans-serif;font-size:14px;color:#0f172a;background:#e8edf3;overscroll-behavior:none}
 #toolbar{position:sticky;top:0;z-index:20;background:#f8fafc;box-shadow:0 10px 24px rgba(15,23,42,.1)}
+#toolbarHead{display:flex;align-items:center;gap:8px;padding:7px 8px;border-bottom:1px solid #d7e0ea;background:#f8fafc}
+#toolbarTitle{font-weight:900;font-size:13px;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#toolbarFold,#tablesFoldAll{min-height:34px;padding:5px 9px;background:#0f172a;color:#fff;border-color:#0f172a}
+#toolbarHead .grow{flex:1}
 #tb{display:flex;flex-wrap:wrap;gap:6px;padding:8px;border-bottom:1px solid #d7e0ea;align-items:center;background:#f8fafc;max-height:30vh;overflow:auto}
+#toolbar.collapsed #tb,#toolbar.collapsed #modeBar{display:none}
 button{padding:6px 10px;border:1px solid #cbd5e1;background:#fff;border-radius:7px;cursor:pointer;font-size:13px;font-weight:700}
 button:disabled{opacity:.42;cursor:not-allowed}
 button.pri{background:#2563eb;color:#fff;border-color:#2563eb}
@@ -37,7 +42,7 @@ select,input,textarea{font-family:inherit;font-size:13px}
 #autoSaveWrap input{width:auto;margin:0}
 #whoami{font-size:11px;color:#475569;white-space:nowrap;max-width:150px;overflow:hidden;text-overflow:ellipsis}
 #storageState{font-size:11px;color:#64748b;white-space:nowrap}
-#stage{position:relative;height:72vh;background:#d9e1eb;overflow:hidden;border-bottom:1px solid #cbd5e1}
+#stage{position:sticky;top:var(--toolbar-h,42px);z-index:9;height:calc(100dvh - var(--toolbar-h,42px) - 8px);min-height:420px;background:#d9e1eb;overflow:hidden;border-bottom:1px solid #cbd5e1}
 #cv{position:absolute;left:0;top:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
 #hint{position:absolute;left:0;top:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#8899aa;pointer-events:none;text-align:center;padding:0 24px}
 .zbtns{position:absolute;left:8px;bottom:8px;display:flex;gap:6px;z-index:5}
@@ -67,6 +72,10 @@ th,td{border:1px solid #ddd;padding:5px 8px;text-align:left;font-size:13px}
 th{background:#f4f6f8}
 td.num,th.num{text-align:right}
 .sec{padding:10px 12px}
+.secHead{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.secHead b{font-size:15px}.secHead .grow{flex:1}
+.secToggle{min-height:32px;padding:4px 9px;background:#f8fafc}
+.sec.collapsed table,.sec.collapsed .secActions{display:none}
 .modal{position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:50}
 .modal .box{background:#fff;border-radius:10px;padding:16px;max-width:880px;width:94%;max-height:90vh;overflow:auto}
 .modal .box.sm{max-width:380px}
@@ -104,19 +113,21 @@ tr.clickable:hover td{background:#f0f5ff}
 #splashSkip{min-width:120px;background:#0f172a;color:#fff;border-color:#0f172a}
 @keyframes splashIn{from{opacity:0}to{opacity:1}}@keyframes splashOut{to{opacity:0;transform:scale(1.015)}}@keyframes iconPop{from{opacity:0;transform:translateY(12px) scale(.82)}to{opacity:1;transform:none}}@keyframes itemUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @media (max-width:700px){
-  body{font-size:15px}button{min-height:42px;font-size:14px}#tb{gap:5px;padding:6px;max-height:34vh;overflow:auto}
-  #tb select{min-height:42px;max-width:145px}#dateWrap{padding:7px}#stage{height:66vh;min-height:430px}
+  body{font-size:15px}button{min-height:42px;font-size:14px}
+  #tb{gap:5px;padding:6px;max-height:34vh;overflow:auto}
+  #tb select{min-height:42px;max-width:145px}#dateWrap{padding:7px}
+  #stage{min-height:360px}
   #panel{position:fixed;left:6px;right:6px;width:auto;top:auto;bottom:6px;max-height:58vh;padding:14px;border-radius:12px}
   #panel input,#panel select{min-height:42px;font-size:16px}.hwbr{grid-template-columns:repeat(2,1fr)}
   #modeBar{padding:6px;gap:4px}#modeBar button{white-space:nowrap;padding:6px 8px}#modeHint{display:none}.zbtns{bottom:10px}
-  .sec{overflow-x:auto;padding:9px 6px}.sec table{min-width:760px}#saveState{min-height:42px;display:flex;align-items:center}
+  .sec{overflow-x:auto;padding:9px 6px;background:#fff;border-bottom:1px solid #d7e0ea}.sec table{min-width:760px}#saveState{min-height:42px;display:flex;align-items:center}
   #syncState{min-height:42px;display:flex;align-items:center}
 }
 @media (min-width:701px) and (max-width:1100px) and (pointer:coarse){
   body{font-size:15px}button{min-height:40px;font-size:14px}
   #tb{gap:6px;max-height:28vh;overflow:auto}
   #modeBar{gap:6px;padding:7px 8px}
-  #stage{height:70vh;min-height:560px}
+  #stage{min-height:560px}
   #panel{width:360px;max-height:calc(100% - 16px);padding:14px}
   #panel input,#panel select{min-height:40px;font-size:15px}
   .sec{overflow-x:auto}.sec table{min-width:760px}
@@ -154,6 +165,12 @@ tr.clickable:hover td{background:#f0f5ff}
 </div>
 
 <div id="toolbar">
+<div id="toolbarHead">
+  <button id="toolbarFold" type="button">접기</button>
+  <span id="toolbarTitle">도면 작업 화면</span>
+  <span class="grow"></span>
+  <button id="tablesFoldAll" type="button">표 접기</button>
+</div>
 <div id="tb">
   <select id="siteSel"></select>
   <button id="btnNewSite">+ 새 현장</button>
@@ -221,20 +238,20 @@ tr.clickable:hover td{background:#f0f5ff}
   </div>
 </div>
 
-<div class="sec">
-  <b>하자조사 기록</b> <span id="recMeta" style="color:#667;font-size:12px"></span>
-  <button id="btnClean">미입력 정리</button>
-  <button id="btnRenum">번호 재정렬</button>
+<div class="sec foldable" id="secRecords">
+  <div class="secHead"><button class="secToggle" type="button">접기</button><b>하자조사 기록</b> <span id="recMeta" style="color:#667;font-size:12px"></span><span class="grow"></span></div>
+  <div class="secActions"><button id="btnClean">미입력 정리</button>
+  <button id="btnRenum">번호 재정렬</button></div>
   <table id="tRec"><thead><tr><th>No.</th><th>수종</th><th>규격</th><th>하자유형</th><th class="num">수량</th><th class="num">사진</th><th class="num">페이지</th></tr></thead><tbody></tbody></table>
 </div>
 
-<div class="sec">
-  <b>수종·규격별 집계 (하자율)</b> <span style="color:#667;font-size:12px">— CSV(수량표+하자)와 동일한 집계</span>
+<div class="sec foldable" id="secAgg">
+  <div class="secHead"><button class="secToggle" type="button">접기</button><b>수종·규격별 집계 (하자율)</b> <span style="color:#667;font-size:12px">— CSV(수량표+하자)와 동일한 집계</span><span class="grow"></span></div>
   <table id="tAgg"><thead><tr><th>수종</th><th class="num">H(m)</th><th class="num">W(m)</th><th class="num">B(cm)</th><th class="num">R(cm)</th><th class="num">수량표(주)</th><th class="num">하자(주)</th><th class="num">하자율</th></tr></thead><tbody></tbody></table>
 </div>
 
-<div class="sec">
-  <b>도면별 하자 수량</b> <span style="color:#667;font-size:12px">— 행 클릭 시 해당 도면으로 이동</span>
+<div class="sec foldable" id="secPageAgg">
+  <div class="secHead"><button class="secToggle" type="button">접기</button><b>도면별 하자 수량</b> <span style="color:#667;font-size:12px">— 행 클릭 시 해당 도면으로 이동</span><span class="grow"></span></div>
   <table id="tPageAgg"><thead><tr><th class="num">페이지</th><th class="num">번호</th><th class="num">하자수량</th><th>주요 수종</th></tr></thead><tbody></tbody></table>
 </div>
 
@@ -303,6 +320,6 @@ tr.clickable:hover td{background:#f0f5ff}
 <input type="file" id="fileRestore" accept="application/json,.json" style="display:none">
 <input type="file" id="fileOcr" accept="image/*" style="display:none">
 
-<script src="app.bundle.js?v=20-18"></script>
+<script src="app.bundle.js?v=20-19"></script>
 </body>
 </html>
