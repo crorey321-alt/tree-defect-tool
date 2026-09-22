@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Tree Defect Inspection (L.A.Kang)</title>
-<link rel="manifest" href="manifest.webmanifest?v=20-22">
+<link rel="manifest" href="manifest.webmanifest?v=20-23">
 <meta name="theme-color" content="#0f172a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -142,6 +142,7 @@ tr.clickable:hover td{background:#f0f5ff}
 <div id="auth"><div class="card">
   <h1>Tree Defect Inspection (L.A.Kang)</h1>
   <div class="sub" id="authSub">회사 이메일과 비밀번호로 로그인하세요.<br>내 계정의 조사 자료만 보이고, 다른 기기에서도 이어서 볼 수 있습니다.</div>
+  <label id="auNameLabel" class="hide">이름/별명</label><input type="text" id="auName" class="hide" autocomplete="name" placeholder="사진대지·도면에 표시될 이름">
   <label id="auEmailLabel">이메일</label><input type="email" id="auEmail" autocomplete="username" inputmode="email" placeholder="name@company.com">
   <label id="auPwLabel">비밀번호</label><input type="password" id="auPw" autocomplete="current-password" placeholder="6자 이상">
   <button class="pri" id="auGo">로그인</button>
@@ -262,12 +263,15 @@ tr.clickable:hover td{background:#f0f5ff}
   <b>새 현장 만들기</b>
   <label style="display:block;margin:10px 0 3px;font-size:12px;color:#556">현장명</label><input id="nName" placeholder="예: 대명자이그랜드시티">
   <label style="display:block;margin:10px 0 3px;font-size:12px;color:#556">조사일자</label><input type="date" id="nDate">
+  <label style="display:block;margin:10px 0 3px;font-size:12px;color:#556">작성자</label><input id="nAuthor" placeholder="비워두면 회원가입 이름 사용">
   <div style="display:flex;gap:6px;margin-top:12px"><button class="pri" id="nOk" style="flex:1">만들기</button><button id="nX" style="flex:1">취소</button></div>
 </div></div>
 
 <div class="modal" id="mDate"><div class="box sm">
   <b>조사일자 설정</b>
   <div style="font-size:12px;color:#667;margin:8px 0">이 현장의 조사일자가 없습니다. 일자를 확인한 뒤 조사를 시작하세요. (마킹 전 필수)</div>
+  <label style="display:block;margin:10px 0 3px;font-size:12px;color:#556">작성자</label><input id="dAuthor" placeholder="비워두면 회원가입 이름 사용">
+  <label style="display:block;margin:10px 0 3px;font-size:12px;color:#556">조사일자</label>
   <input type="date" id="dDate">
   <button class="pri" id="dOk" style="width:100%;margin-top:12px">이 날짜로 조사 시작</button>
 </div></div>
@@ -323,6 +327,6 @@ tr.clickable:hover td{background:#f0f5ff}
 <input type="file" id="fileRestore" accept="application/json,.json" style="display:none">
 <input type="file" id="fileOcr" accept="image/*" style="display:none">
 
-<script src="app.bundle.js?v=20-22"></script>`r`n</body>
+<script src="app.bundle.js?v=20-23"></script>`r`n</body>
 </html>
 

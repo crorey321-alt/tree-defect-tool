@@ -32,7 +32,7 @@ var SEED=[
 ['팽나무','','','','50','13'],['팽나무','','','','40','3']
 ];
 
-var S=null, curPage=1, UID=null, USER_LABEL='', LOCAL_ONLY=false;
+var S=null, curPage=1, UID=null, USER_LABEL='', USER_NAME='', LOCAL_ONLY=false;
 var view={s:0.3,tx:0,ty:0};
 var selNo=null, selItem=0, lastMarkT=0, createdStack=[], pdfMem=null;
 var deviceQueue=[];            /* 기기(갤러리)에 아직 안 넘긴 촬영 원본 */
@@ -102,6 +102,9 @@ async function updateStorageState(){if(!navigator.storage||!navigator.storage.es
 async function requestPersistentStorage(){try{if(navigator.storage&&navigator.storage.persist)await navigator.storage.persist();}catch(e){}updateStorageState();}
 function loadScript(src){return new Promise(function(res,rej){var s=document.createElement('script');s.src=src;s.onload=function(){res();};s.onerror=function(e){rej(e);};document.head.appendChild(s);});}
 function dlBlob(b,name){var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},8000);}
+function userNameFromUser(user){var m=(user&&user.user_metadata)||{};return (m.display_name||m.name||m.nickname||m.full_name||'').trim();}
+function defaultAuthor(){return (USER_NAME||'').trim()||'LAKang';}
+function siteAuthor(st){return ((st&&st.author)||'').trim()||defaultAuthor();}
 function csvEsc(v){v=(v==null)?'':String(v);if(v.indexOf(',')>=0||v.indexOf('"')>=0||v.indexOf('\n')>=0){return '"'+v.split('"').join('""')+'"';}return v;}
 function csvText(rows){return '﻿'+rows.map(function(r){return r.map(csvEsc).join(',');}).join('\r\n');}
 function dlCsv(rows,name){dlBlob(new Blob([csvText(rows)],{type:'text/csv;charset=utf-8'}),name);}
@@ -139,6 +142,7 @@ function normRec(r,i){
   return ensureRec(n);}
 function normSite(st,id){
   return {id:id,name:st.name||('현장'+id),date:st.date||st.surveyDate||'',pages:st.pages||st.pageCount||0,
+    author:st.author||st.writer||st.createdBy||'',
     qt:(st.qt||st.qtable||st.table||[]).map(normQt),
     recs:(st.recs||st.records||[]).map(function(r,i){return normRec(r,i);}),
     marker:normMarker(st.marker||st.markerSettings||st.markerSizes||{}),
@@ -168,7 +172,7 @@ async function persistNow(){
   }catch(e){setSaveState('저장 실패','err');toast('기록 저장 실패: 기기 저장공간을 확인하세요');return false;}}
 
 /* ===================== 되돌리기 (현재 현장만, 경량) ===================== */
-function siteSnap(){var st=site();if(!st)return '';return JSON.stringify({id:S.cur,qt:st.qt,recs:st.recs,pages:st.pages,date:st.date,name:st.name,marker:st.marker});}
+function siteSnap(){var st=site();if(!st)return '';return JSON.stringify({id:S.cur,qt:st.qt,recs:st.recs,pages:st.pages,date:st.date,name:st.name,author:st.author,marker:st.marker});}
 function updateHistoryButtons(){var u=$('btnUndo'),r=$('btnRedo');if(u)u.disabled=!undoStates.length;if(r)r.disabled=!redoStates.length;}
 function initHistory(){undoStates=[];redoStates=[];lastSiteState=siteSnap();historyReady=true;updateHistoryButtons();}
 function pushHistory(){
@@ -710,13 +714,18 @@ async function composePage(p){
   return await withPage(p,function(img){
     var c=document.createElement('canvas');c.width=img.width;c.height=img.height;var x=c.getContext('2d');
     x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0);paintMarkers(x,p,false);
-    var n=site().recs.filter(function(r){return r.page===p;}).length;
-    var txt='하자조사도면 | '+site().name+' | 조사일 '+(site().date||'-')+' | 표기 '+n+'건';
-    x.font='600 46px Pretendard, sans-serif';x.textAlign='left';x.textBaseline='alphabetic';
-    var w=x.measureText(txt).width+44;
-    x.fillStyle='rgba(255,255,255,0.93)';x.fillRect(20,c.height-104,w,72);
-    x.strokeStyle='#d90429';x.lineWidth=3;x.strokeRect(20,c.height-104,w,72);
-    x.fillStyle='#111';x.fillText(txt,42,c.height-54);
+    var st=site(),n=st.recs.filter(function(r){return r.page===p;}).length,author=siteAuthor(st);
+    var lines=['수목하자조사 도면','현장명: '+st.name,'조사일: '+(st.date||'-'),'페이지: P'+p+'   표기: '+n+'건','작성자: '+author+'   서 명 :'];
+    x.textAlign='left';x.textBaseline='alphabetic';
+    x.font='800 52px Pretendard, sans-serif';var w=x.measureText(lines[0]).width;
+    x.font='600 36px Pretendard, sans-serif';
+    for(var i=1;i<lines.length;i++)w=Math.max(w,x.measureText(lines[i]).width);
+    w=Math.min(c.width-40,w+56);var h=252;
+    x.fillStyle='rgba(255,255,255,0.94)';x.fillRect(20,20,w,h);
+    x.strokeStyle='#0f172a';x.lineWidth=4;x.strokeRect(20,20,w,h);
+    x.fillStyle='#0f172a';x.font='800 52px Pretendard, sans-serif';x.fillText(lines[0],48,82);
+    x.fillStyle='#334155';x.font='600 36px Pretendard, sans-serif';
+    for(var j=1;j<lines.length;j++)x.fillText(lines[j],48,82+j*40);
     drawWatermark(x,c.width,c.height);
     return c;});}
 async function expPng(){
@@ -744,7 +753,7 @@ async function photoSheet(){
   out.doc.save(out.name);}
 async function buildPhotoSheetDoc(st,items){
   toast('보고서형 사진대지 생성 중… ('+items.length+'장)');
-  var per=8,tot=Math.ceil(items.length/per);
+  var per=8,tot=Math.ceil(items.length/per),author=siteAuthor(st);
   var JS=window.jspdf.jsPDF;var doc=new JS({orientation:'portrait',unit:'mm',format:'a4'});
   for(var p=0;p<tot;p++){
     if(p>0)doc.addPage('a4','portrait');
@@ -756,7 +765,7 @@ async function buildPhotoSheetDoc(st,items){
     x.fillText('(Tree Defect Inspection Photo Report)',450,54);
     x.font='600 22px Pretendard, sans-serif';x.fillStyle='#334155';
     x.fillText('현장명: '+st.name,40,94);x.fillText('조사일: '+(st.date||'-'),430,94);x.fillText('페이지: '+(p+1)+' / '+tot,760,94);
-    x.fillText('작성자:',40,130);x.fillText('서 명 :',430,130);
+    x.fillText('작성자: '+author,40,130);x.fillText('서 명 :',430,130);
     x.strokeStyle='#0f172a';x.lineWidth=3;x.beginPath();x.moveTo(40,154);x.lineTo(1200,154);x.stroke();
     for(var s=0;s<per;s++){
       var it=items[p*per+s];if(!it)break;
@@ -1012,20 +1021,23 @@ var authMode='login';
 function setAuthMode(m){
   authMode=m;
   var isReset=m==='reset', isNewPw=m==='newpw';
+  var isSignup=m==='signup';
   $('auGo').textContent=isReset?'재설정 메일 보내기':(isNewPw?'새 비밀번호 저장':(m==='login'?'로그인':'회원가입'));
   $('auToggle').textContent=(m==='login')?'계정이 없으신가요? 회원가입':'로그인으로 돌아가기';
   $('auReset').classList.toggle('hide',m!=='login');
+  $('auNameLabel').classList.toggle('hide',!isSignup);
+  $('auName').classList.toggle('hide',!isSignup);
   $('auEmailLabel').classList.toggle('hide',isNewPw);
   $('auEmail').classList.toggle('hide',isNewPw);
   $('auPwLabel').classList.toggle('hide',isReset);
   $('auPw').classList.toggle('hide',isReset);
   $('auPw').setAttribute('autocomplete',m==='login'?'current-password':'new-password');
-  $('authSub').innerHTML=isReset?'가입한 이메일을 입력하면 비밀번호 재설정 링크를 보내드립니다.':(isNewPw?'새 비밀번호를 입력해 주세요. 저장 후 바로 앱으로 들어갑니다.':'회사 이메일과 비밀번호로 로그인하세요.<br>내 계정의 조사 자료만 보이고, 다른 기기에서도 이어서 볼 수 있습니다.');
+  $('authSub').innerHTML=isReset?'가입한 이메일을 입력하면 비밀번호 재설정 링크를 보내드립니다.':(isNewPw?'새 비밀번호를 입력해 주세요. 저장 후 바로 앱으로 들어갑니다.':(isSignup?'사진대지와 도면에 표시될 이름/별명을 함께 입력하세요.':'회사 이메일과 비밀번호로 로그인하세요.<br>내 계정의 조사 자료만 보이고, 다른 기기에서도 이어서 볼 수 있습니다.'));
   authMsg('');}
 function showAuth(){$('auth').style.display='flex';}
 function hideAuth(){$('auth').style.display='none';}
 async function doAuth(){
-  var email=$('auEmail').value.trim(),pw=$('auPw').value;
+  var email=$('auEmail').value.trim(),pw=$('auPw').value,displayName=$('auName').value.trim();
   if(!sb){authMsg('서버 설정(config.js)이 비어 있습니다. 아래 "이 기기에서만 사용하기"로 진행하거나 설정을 채워 주세요.','err');return;}
   $('auGo').disabled=true;authMsg('처리 중…','info');
   try{
@@ -1046,10 +1058,11 @@ async function doAuth(){
       return;
     }
     if(!email||!pw){authMsg('이메일과 비밀번호를 입력하세요.','err');return;}
+    if(authMode==='signup'&&!displayName){authMsg('사진대지와 도면에 표시할 이름/별명을 입력하세요.','err');return;}
     if(pw.length<6){authMsg('비밀번호는 6자 이상이어야 합니다.','err');return;}
     var res;
     if(authMode==='login')res=await sb.auth.signInWithPassword({email:email,password:pw});
-    else res=await sb.auth.signUp({email:email,password:pw});
+    else res=await sb.auth.signUp({email:email,password:pw,options:{data:{display_name:displayName,name:displayName,nickname:displayName}}});
     if(res.error)throw res.error;
     if(authMode==='signup'&&!res.data.session){
       authMsg('가입 요청이 접수되었습니다. 메일함에서 인증 링크를 누른 뒤 로그인하세요.','ok');
@@ -1128,7 +1141,7 @@ async function pullSites(){
       if(S.sites[row.id]){if(row.id===S.cur)discardPanel();delete S.sites[row.id];changed=true;}
       return;}
     var local=S.sites[row.id];
-    var server={name:row.name,date:row.survey_date||'',pages:row.pages||0,qt:row.qt||[],recs:row.recs||[],
+    var server={name:row.name,date:row.survey_date||'',author:(local&&local.author)||'',pages:row.pages||0,qt:row.qt||[],recs:row.recs||[],
       marker:local&&local.marker,
       updated:row.updated_at||nowIso(),dirty:false};
     if(!local){S.sites[row.id]=normSite(server,row.id);S.sites[row.id].dirty=false;changed=true;return;}
@@ -1205,14 +1218,14 @@ function ensureSeed(){
     qt:SEED.map(function(a){return {sp:a[0],H:a[1],W:a[2],B:a[3],R:a[4],qty:a[5]};}),
     recs:[],updated:nowIso(),dirty:true};
   if(!S.cur)S.cur=id;}
-function addSite(name,date){
+function addSite(name,date,author){
   var id=uuid();
-  S.sites[id]={id:id,name:name,date:date||'',pages:0,qt:[],recs:[],updated:nowIso(),dirty:true};
+  S.sites[id]={id:id,name:name,date:date||'',author:(author||'').trim(),pages:0,qt:[],recs:[],updated:nowIso(),dirty:true};
   S.cur=id;cacheClear();view._fit=false;save();return id;}
 function buildStatic(){
   var t=$('fType');t.innerHTML='';
   TYPES.forEach(function(ty){var o=document.createElement('option');o.value=ty;o.textContent=ty;t.appendChild(o);});}
-function showDate(){$('dDate').value=site().date||today();$('mDate').style.display='flex';}
+function showDate(){$('dDate').value=site().date||today();$('dAuthor').value=site().author||'';$('mDate').style.display='flex';}
 function setToolbarCollapsed(on){
   $('toolbar').classList.toggle('collapsed',!!on);
   $('toolbarFold').textContent=on?'펼치기':'접기';
@@ -1258,7 +1271,10 @@ async function loadState(){
 
 async function enterApp(user){
   UID=user?user.id:null;
-  USER_LABEL=user?(user.email||user.id):'이 기기 전용';
+  USER_NAME=userNameFromUser(user);
+  if(user&&USER_NAME){try{localStorage.setItem('tds_user_name',USER_NAME);}catch(e){}}
+  if(!USER_NAME){try{USER_NAME=localStorage.getItem('tds_user_name')||'';}catch(e){}}
+  USER_LABEL=user?((USER_NAME?USER_NAME+' · ':'')+(user.email||user.id)):'이 기기 전용';
   LOCAL_ONLY=!user;
   SYNC_ON=!!(user&&sb);
   $('whoami').textContent=USER_LABEL;
@@ -1337,10 +1353,10 @@ function bindEvents(){
     S.cur=e.target.value;createdStack=[];selNo=null;$('panel').style.display='none';
     cacheClear();curPage=1;view._fit=false;boxCache=new WeakMap();
     await persistNow();initHistory();renderAll();await ensurePage(1);fitView();renderAll();});
-  $('btnNewSite').addEventListener('click',function(){$('nName').value='';$('nDate').value=today();$('mSite').style.display='flex';});
+  $('btnNewSite').addEventListener('click',function(){$('nName').value='';$('nDate').value=today();$('nAuthor').value='';$('mSite').style.display='flex';});
   $('nOk').addEventListener('click',async function(){
     var nm=$('nName').value.trim();if(!nm){alert('현장명을 입력하세요');return;}
-    addSite(nm,$('nDate').value||today());$('mSite').style.display='none';
+    addSite(nm,$('nDate').value||today(),$('nAuthor').value);$('mSite').style.display='none';
     createdStack=[];selNo=null;$('panel').style.display='none';
     await persistNow();initHistory();renderAll();toast('현장 "'+nm+'" 생성됨');});
   $('nX').addEventListener('click',function(){$('mSite').style.display='none';});
@@ -1360,7 +1376,7 @@ function bindEvents(){
   $('btnLogout').addEventListener('click',doLogout);
   $('syncState').addEventListener('click',function(){if(SYNC_ON)syncNow();else toast('서버를 사용하지 않는 모드입니다');});
   $('date').addEventListener('change',function(e){site().date=e.target.value;save();toast('조사일자 '+(e.target.value||'(없음)')+' 저장됨');});
-  $('dOk').addEventListener('click',function(){site().date=$('dDate').value||today();save();$('mDate').style.display='none';renderAll();toast('조사일자 '+site().date+' — 조사 시작');});
+  $('dOk').addEventListener('click',function(){var st=site();st.date=$('dDate').value||today();st.author=$('dAuthor').value.trim();save();$('mDate').style.display='none';renderAll();toast('조사일자 '+st.date+' — 조사 시작');});
   $('btnDraw').addEventListener('click',function(){$('fileDraw').click();});
   $('btnSaveAll').addEventListener('click',async function(){
     clearTimeout(draftTimer);applyPanelDraft();
