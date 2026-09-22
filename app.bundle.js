@@ -744,34 +744,34 @@ async function photoSheet(){
   out.doc.save(out.name);}
 async function buildPhotoSheetDoc(st,items){
   toast('보고서형 사진대지 생성 중… ('+items.length+'장)');
-  var per=4,tot=Math.ceil(items.length/per);
+  var per=8,tot=Math.ceil(items.length/per);
   var JS=window.jspdf.jsPDF;var doc=new JS({orientation:'portrait',unit:'mm',format:'a4'});
   for(var p=0;p<tot;p++){
     if(p>0)doc.addPage('a4','portrait');
     var c=document.createElement('canvas');c.width=1240;c.height=1754;var x=c.getContext('2d');
     x.fillStyle='#fff';x.fillRect(0,0,1240,1754);
     x.fillStyle='#0f172a';x.font='800 36px Pretendard, sans-serif';x.textAlign='left';x.textBaseline='alphabetic';
-    x.fillText('Tree Defect Inspection Photo Report',40,54);
+    x.fillText('수목하자조사 사진대지',40,54);
+    x.font='600 20px Pretendard, sans-serif';x.fillStyle='#475569';
+    x.fillText('(Tree Defect Inspection Photo Report)',450,54);
     x.font='600 22px Pretendard, sans-serif';x.fillStyle='#334155';
     x.fillText('현장명: '+st.name,40,94);x.fillText('조사일: '+(st.date||'-'),430,94);x.fillText('페이지: '+(p+1)+' / '+tot,760,94);
-    x.fillText('작성자: LAKang',40,130);x.fillText('협력사 확인:',430,130);drawCheckBox(x,'확인',570,108);drawCheckBox(x,'보완',680,108);
+    x.fillText('작성자:',40,130);x.fillText('서 명 :',430,130);
     x.strokeStyle='#0f172a';x.lineWidth=3;x.beginPath();x.moveTo(40,154);x.lineTo(1200,154);x.stroke();
     for(var s=0;s<per;s++){
       var it=items[p*per+s];if(!it)break;
-      var col=s%2,row=Math.floor(s/2);var cx=40+col*590,cy=190+row*690;
+      var col=s%2,row=Math.floor(s/2);var cx=40+col*590,cy=180+row*385;
       try{
         var blob=await getPhotoBlob(st.id,it.name);
-        if(blob){var im=await loadImg(blob);var fit=Math.min(560/im.width,430/im.height);
-          var w=im.width*fit,h=im.height*fit;x.drawImage(im,cx+(560-w)/2,cy+(430-h)/2,w,h);}
+        if(blob){var im=await loadImg(blob);var fit=Math.min(560/im.width,270/im.height);
+          var w=im.width*fit,h=im.height*fit;x.drawImage(im,cx+(560-w)/2,cy+(270-h)/2,w,h);}
       }catch(e2){}
-      x.strokeStyle='#cbd5e1';x.lineWidth=2;x.strokeRect(cx,cy,560,430);
-      x.fillStyle='#f8fafc';x.fillRect(cx,cy+430,560,176);x.strokeRect(cx,cy+430,560,176);
-      x.fillStyle='#0f172a';x.font='700 23px Pretendard, sans-serif';
+      x.strokeStyle='#cbd5e1';x.lineWidth=2;x.strokeRect(cx,cy,560,270);
+      x.fillStyle='#f8fafc';x.fillRect(cx,cy+270,560,82);x.strokeRect(cx,cy+270,560,82);
+      x.fillStyle='#0f172a';x.font='700 20px Pretendard, sans-serif';
       var caps=photoCaptionLines(it.r);
-      for(var cl=0;cl<Math.min(2,caps.length);cl++)x.fillText(caps[cl],cx+14,cy+466+cl*30);
-      if(caps.length>2)x.fillText('외 '+(caps.length-2)+'개 항목',cx+14,cy+526);
-      x.fillStyle='#475569';x.font='19px Pretendard, sans-serif';
-      x.fillText('페이지: P'+it.r.page+'   사진: '+it.i+' / '+it.r.photos.length,cx+14,cy+578);}
+      for(var cl=0;cl<Math.min(2,caps.length);cl++)x.fillText(caps[cl],cx+14,cy+304+cl*26);
+      if(caps.length>2)x.fillText('외 '+(caps.length-2)+'개 항목',cx+14,cy+340);}
     drawWatermark(x,1240,1754);
     doc.addImage(c.toDataURL('image/jpeg',0.78),'JPEG',0,0,210,297);
     c.width=c.height=0;
