@@ -305,10 +305,10 @@ function labelBox(x,r){
 function invalidateBox(r){boxCache.delete(r);}
 function drawNoBadge(x,no,cx,cy,scale,color){
   var txt=String(no),oldFont=x.font,px=(oldFont.match(/(\d+(?:\.\d+)?)px/)||[])[1],badgeFont=oldFont;
-  if(px)badgeFont=oldFont.replace(/(\d+(?:\.\d+)?)px/,Math.max(10,Number(px)*0.78)+'px');
+  if(px)badgeFont=oldFont.replace(/(\d+(?:\.\d+)?)px/,Math.max(9,Number(px)*0.62)+'px');
   x.font=badgeFont;
-  var r=Math.max(13*scale,x.measureText(txt).width/2+5*scale);
-  x.save();x.lineWidth=Math.max(2,3*scale);x.strokeStyle=color;x.fillStyle='rgba(255,255,255,.98)';
+  var r=Math.max(10*scale,x.measureText(txt).width/2+4*scale);
+  x.save();x.lineWidth=Math.max(1.5,2.4*scale);x.strokeStyle=color;x.fillStyle='rgba(255,255,255,.98)';
   x.beginPath();x.arc(cx+r,cy,r,0,6.2832);x.fill();x.stroke();
   x.fillStyle=color;x.textAlign='center';x.textBaseline='middle';x.fillText(txt,cx+r,cy);x.restore();x.font=oldFont;
   return r*2;}
@@ -526,12 +526,12 @@ function startAddPoint(){
    · 안드로이드/PC : <a download> → 다운로드 폴더에 저장 → 갤러리가 Download 앨범으로 인덱싱 (탭 불필요 = 자동)
    · 아이폰        : 공유창(navigator.share)에서 [이미지 저장] → 사진첩. iOS는 사용자 탭이 반드시 필요하므로
                      여러 장을 모아 두었다가 한 번의 탭으로 전부 저장한다. */
-function safeName(s){return String(s||'').replace(/[\\/:*?"<>|]/g,'').replace(/\s+/g,'_').slice(0,24);}
+function safeShortName(s){return String(s||'').replace(/[\\/:*?"<>|]/g,'').replace(/\s+/g,'_').slice(0,24);}
 function captureFileName(r,seq,src){
   var ext=(src&&src.name&&(src.name.match(/\.[a-z0-9]+$/i)||[])[0])||(((src&&src.type)||'').indexOf('png')>=0?'.png':'.jpg');
   var st=site()||{},q=r?itemAt(r,selItem):null;
-  var parts=['교목하자',safeName(st.name||'현장'),String(st.date||today()).replace(/-/g,''),'No'+pad3(r?r.no:0)];
-  if(q&&q.sp)parts.push(safeName(q.sp));
+  var parts=['교목하자',safeShortName(st.name||'현장'),String(st.date||today()).replace(/-/g,''),'No'+pad3(r?r.no:0)];
+  if(q&&q.sp)parts.push(safeShortName(q.sp));
   return parts.join('_')+'_'+seq+ext;}
 function namedFile(src,nm){
   try{return new File([src],nm,{type:src.type||'image/jpeg',lastModified:src.lastModified||Date.now()});}
@@ -810,9 +810,9 @@ async function makeZip(files){
   var chunks=[],central=[],offset=0;
   for(var i=0;i<files.length;i++){
     var name=bytes(files[i].name),data=new Uint8Array(await files[i].blob.arrayBuffer()),crc=crc32(data);
-    var local=concatBytes([u32(0x04034b50),u16(20),u16(0),u16(0),u16(0),u16(0),u32(crc),u32(data.length),u32(data.length),u16(name.length),u16(0),name,data]);
+    var local=concatBytes([u32(0x04034b50),u16(20),u16(2048),u16(0),u16(0),u16(0),u32(crc),u32(data.length),u32(data.length),u16(name.length),u16(0),name,data]);
     chunks.push(local);
-    central.push(concatBytes([u32(0x02014b50),u16(20),u16(20),u16(0),u16(0),u16(0),u16(0),u32(crc),u32(data.length),u32(data.length),u16(name.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(offset),name]));
+    central.push(concatBytes([u32(0x02014b50),u16(20),u16(20),u16(2048),u16(0),u16(0),u16(0),u32(crc),u32(data.length),u32(data.length),u16(name.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(offset),name]));
     offset+=local.length;}
   var cdir=concatBytes(central),body=concatBytes(chunks);
   var end=concatBytes([u32(0x06054b50),u16(0),u16(0),u16(files.length),u16(files.length),u32(cdir.length),u32(body.length),u16(0)]);
