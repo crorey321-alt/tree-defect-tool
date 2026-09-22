@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Tree Defect Inspection (L.A.Kang)</title>
-<link rel="manifest" href="manifest.webmanifest?v=20-23">
+<link rel="manifest" href="manifest.webmanifest?v=20-24">
 <meta name="theme-color" content="#0f172a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -50,6 +50,9 @@ select,input,textarea{font-family:inherit;font-size:13px}
 #modeBar{position:absolute;left:8px;top:8px;z-index:8;display:flex;flex-wrap:wrap;gap:5px;max-width:calc(100% - 16px);max-height:42%;overflow:auto;padding:8px;background:rgba(15,23,42,.88);border:1px solid rgba(255,255,255,.16);border-radius:9px;box-shadow:0 10px 28px rgba(15,23,42,.24);backdrop-filter:blur(8px)}
 #modeBar button.active{background:#2563eb;color:#fff;border-color:#2563eb}#modeHint{align-self:center;color:#475569;font-size:12px;padding:0 4px}
 #modeBar #modeHint{color:#cbd5e1}
+.modeControls{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+#modeBar.controlsCollapsed .markerSizes{display:none}
+#modeBar.controlsCollapsed{max-height:none}
 .markerSizes{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;padding:3px 5px}
 .markerSizes label,.markerPalette{display:flex;align-items:center;gap:6px;min-height:32px;font-size:12px;white-space:nowrap}
 #modeBar .markerSizes label,#modeBar .markerPalette{color:#f8fafc}
@@ -91,6 +94,9 @@ tr.clickable:hover td{background:#f0f5ff}
 #ocrWrap{position:relative;width:100%;height:min(62vh,620px);background:#e2e8f0;overflow:hidden;border:1px solid #cbd5e1;border-radius:8px}
 #ocrCanvas{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
 #ocrGuide{font-size:12px;color:#475569;margin:8px 0;line-height:1.45}
+.infoBox{border:1px solid #cbd5e1;background:#f8fafc;border-radius:8px;padding:10px 12px;line-height:1.55;color:#334155;font-size:13px}
+.infoBox b{color:#0f172a}.infoBox ul{padding-left:18px;margin:6px 0 0}
+#qtPasteBody{display:block}.qtPasteCollapsed #qtPasteBody{display:none}
 /* ---- 로그인 ---- */
 #auth{position:fixed;inset:0;background:#f8fafc;z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
 #auth .card{width:100%;max-width:360px;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:22px;box-shadow:0 8px 30px rgba(15,23,42,.08)}
@@ -197,6 +203,7 @@ tr.clickable:hover td{background:#f0f5ff}
   <button id="btnBk">백업</button>
   <button id="btnRs">복원</button>
   <button id="btnInstall">설치 안내</button>
+  <button id="btnTips">주의사항</button>
   <button id="btnDelSite">현장 삭제</button>
   <span id="whoami"></span><button id="btnLogout">로그아웃</button>
   <span id="storageState"></span>
@@ -206,7 +213,7 @@ tr.clickable:hover td{background:#f0f5ff}
 <div id="stage">
   <canvas id="cv"></canvas>
   <div id="hint">[① 도면 열기]로 도면(PDF/이미지)을 열어 주세요 — 한 번 열면 기기에 저장되고 서버에도 백업됩니다</div>
-  <div id="modeBar"><button id="modeMark">📍 하자·인출선 입력</button><button id="modePan">✋ 도면 이동</button><button id="leaderCancel" style="display:none">입력 취소</button><span id="modeHint"></span>
+  <div id="modeBar"><div class="modeControls"><button id="modeMark">📍 하자·인출선 입력</button><button id="modePan">✋ 도면 이동</button><button id="modeFold" type="button">상세 접기</button><button id="leaderCancel" style="display:none">입력 취소</button><span id="modeHint"></span></div>
     <div class="markerSizes">
       <label for="pointSize">점 크기 <input id="pointSize" type="range" min="20" max="250" step="5" value="100"><output id="pointSizeValue" for="pointSize">100%</output></label>
       <label for="labelSize">박스 크기 <input id="labelSize" type="range" min="20" max="120" step="5" value="65"><output id="labelSizeValue" for="labelSize">65%</output></label>
@@ -296,16 +303,37 @@ tr.clickable:hover td{background:#f0f5ff}
   <div style="max-height:44vh;overflow:auto">
   <table id="tQt"><thead><tr><th style="min-width:110px">수종</th><th>H(m)</th><th>W(m)</th><th>B(cm)</th><th>R(cm)</th><th>수량</th><th></th></tr></thead><tbody></tbody></table>
   </div>
-  <label style="display:block;margin-top:10px;font-size:12px;color:#556">붙여넣기 — 엑셀 복사(탭 구분: 현장명/수종/H/W/B/R/수량 또는 수종부터) 또는 "청단풍 H3.0xR10 68" 형식</label>
-  <textarea id="qtTxt" rows="5"></textarea>
-<div style="display:flex;gap:6px;margin-top:6px"><button id="qtParse">붙여넣기 파싱 → 행 추가</button><button class="pri" id="qtDone">저장 후 닫기</button></div>
+  <div id="qtPasteBox">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:8px">
+      <label style="font-size:12px;color:#556">붙여넣기/OCR — 엑셀 복사 또는 "청단풍 H3.0xR10 68" 형식</label>
+      <button id="qtPasteFold" type="button">붙여넣기 접기</button>
+    </div>
+    <div id="qtPasteBody">
+      <textarea id="qtTxt" rows="5"></textarea>
+      <div style="display:flex;gap:6px;margin-top:6px"><button id="qtParse">붙여넣기 파싱 → 행 추가</button><button class="pri" id="qtDone">저장 후 닫기</button></div>
+    </div>
+  </div>
 </div></div>
 
 <div class="modal" id="mOcr"><div class="box">
   <div style="display:flex;justify-content:space-between;align-items:center"><b>수량표 영역 OCR — 현재 도면 P<span id="ocrPage">1</span></b><button id="ocrX">✕</button></div>
-  <div id="ocrGuide">수량표가 있는 부분을 손가락이나 마우스로 드래그해 지정하세요. 같은 영역을 다시 지정해 부분 재인식할 수 있습니다.</div>
+  <div id="ocrGuide">도면 OCR은 보조 기능입니다. 도면 해상도·글자 겹침·표 선 때문에 오인식이 잦으니 결과를 반드시 확인하고, 틀린 값은 직접 수정하세요.</div>
   <div id="ocrWrap"><canvas id="ocrCanvas"></canvas></div>
   <div style="display:flex;gap:6px;margin-top:10px"><button class="pri" id="ocrRun" style="flex:1">선택 영역 인식</button><button id="ocrCancel" style="flex:1">취소</button></div>
+</div></div>
+
+<div class="modal" id="mTips"><div class="box sm">
+  <div style="display:flex;justify-content:space-between;align-items:center"><b>사용 전 알아둘 점</b><button id="tipsX">✕</button></div>
+  <div class="infoBox" style="margin-top:10px">
+    <b>핵심 조작</b>
+    <ul>
+      <li>하자 입력은 한 손가락으로 위치를 찍고, 번호 위치를 한 번 더 찍습니다.</li>
+      <li>도면 이동과 확대/축소는 두 손가락으로만 동작합니다.</li>
+      <li>상단 도면 패널은 고정되며, 상세 옵션은 접어서 도면을 넓게 볼 수 있습니다.</li>
+      <li>도면 OCR은 참고용입니다. 인식 결과는 저장 전에 꼭 확인하세요.</li>
+      <li>51번 이후 번호도 1~50번과 같은 크기감으로 원형 배지로 표시됩니다.</li>
+    </ul>
+  </div>
 </div></div>
 
 <div class="modal" id="mInstall"><div class="box sm">
@@ -327,6 +355,6 @@ tr.clickable:hover td{background:#f0f5ff}
 <input type="file" id="fileRestore" accept="application/json,.json" style="display:none">
 <input type="file" id="fileOcr" accept="image/*" style="display:none">
 
-<script src="app.bundle.js?v=20-23"></script>`r`n</body>
+<script src="app.bundle.js?v=20-24"></script>`r`n</body>
 </html>
 
